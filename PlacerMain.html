@@ -1,0 +1,123 @@
+<style>
+body{width:100vw;height:100vh;margin,padding:0px;}
+#header{width:100vw; height:32px;}
+#selectionbox{background:#CCC; width:69vw; height:calc(100vh - 32px); float:left;top:32px;}
+#points{width:30vw; height:calc(100vh - 32px);  background:#AAA; float:right;top:32px;}
+
+hr.intercept {
+position:absolute; 
+z-index:999; top: calc(50vh + 16px);
+    border: none;
+    border-top: 3px double #333;
+    color: #000;
+    overflow: visible;
+text-align: center;
+height: 5px;
+width:100vw;
+background:#000;
+}
+input.point{width:60%;display:inline-block;}
+input.button{width:34%;display:inline-block;}
+
+
+#x_intercept{}
+</style>
+
+<script>
+
+points=[];
+
+function update_points(){
+PointDiv=document.getElementById("points");
+
+S="Points:<br>";
+for (let i = 0; i < points.length; i++) {
+  S+= i+"<input class=point value=\"("+points[i][0] +','+ points[i][1]+ ")\"> <input type=button class=\"button\" value=\"update\"><br>";
+
+} 
+PointDiv.innerHTML=S;
+}
+
+	
+function edit_point(){
+
+}
+
+function add_point(x,y){
+points.push([Math.round(x*10000)/10000,Math.round(y*10000)/10000]);
+update_points();
+draw_points();
+}
+
+function draw_points(){
+var c = document.getElementById("selectionbox");
+var ctx = c.getContext("2d");
+var w=ctx.canvas.width;
+var h=ctx.canvas.height;
+var lastx=points[0][0];
+var lasty=points[0][1];
+var hw=w/2;
+var hh=h/2;
+
+for (let i = 1; i < points.length; i++) {
+	x=points[i][0];
+	y=points[i][1];
+ctx.beginPath();
+ctx.moveTo(lastx*w,hh-lasty*hh);
+ctx.lineTo(x*w,hh-y*hh);
+ctx.stroke(); 
+lastx=x;
+lasty=y;
+} 
+
+}
+
+
+function intercept(event){
+	selectionbox=document.getElementById("selectionbox");
+    var mouse_x=event.clientX;
+	var object_left=selectionbox.offsetLeft;
+relative_x=(mouse_x - object_left)/selectionbox.clientWidth;
+add_point(relative_x,0);
+}
+
+function clicked(event){
+	selectionbox=document.getElementById("selectionbox");
+    var mouse_x=event.clientX;
+    var mouse_y=event.clientY;
+	var object_top=selectionbox.offsetTop;
+	var object_left=selectionbox.offsetLeft;
+relative_x=(mouse_x - object_left)/selectionbox.clientWidth;
+relative_y=1-(mouse_y - object_top)/selectionbox.clientHeight*2;
+add_point(relative_x,relative_y);
+}
+
+function tolisp(){
+wi=document.getElementById("widthinput");
+hi=document.getElementById("heightinput");
+w=1*wi.value;
+h=1*hi.value;
+s="`(";
+for (let i = 0; i < points.length; i++) {
+	x=points[i][0]*w;
+	y=points[i][1]*h;
+s+="("+x+" . "+y+") ";
+}
+
+s+=")";
+alert(s);
+}
+
+</script>
+<hr class=intercept onclick="intercept(event);">
+<body>
+<div id=header>tool menu: Width:<input id=widthinput value="3" /> <input id=heightinput value="2" /><input type=button value="As lisp" onclick="tolisp()"></div>
+<div>
+<canvas id=selectionbox onclick="clicked(event);"> </canvas>
+<div id=points>Points:<br>
+SAMPLE //Will be overwritten on successful load
+
+</div>
+</div>
+
+</body>
